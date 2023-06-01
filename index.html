@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Projeto Final</title>
+
+    <style>
+        body {
+            background-color: #0f0f0f;
+        }
+
+        .area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 10px;
+        }
+
+        h3 {
+            align-self: center;
+        }
+
+        .card {
+            background-color: #888888;
+            padding: 10px;
+            margin: 20px;
+            border-radius: 15px;
+            border: 2px solid red;
+        }
+
+        .row {
+            display: flex;
+        }
+
+        p {
+            font-size: 20px;
+            padding-left: 15px;
+            padding-right: 15px;
+            align-self: center;
+        }
+
+        nav {
+            text-align: center;
+        }
+
+        .b-nav {
+            padding: 8px;
+            background: red;
+            border: 2px solid yellow;
+            border-radius: 15px;
+            font-weight: 900;
+        }
+
+        .b-form {
+            padding: 8px;
+            background: red;
+            border: 2px solid yellow;
+            border-radius: 15px;
+            font-weight: 900;
+        }
+
+        .line {
+            border-bottom: 1px solid orange;
+        }
+
+        .formulario {
+            margin: 15px auto 15px auto;
+            display: flex;
+            flex-direction: column;
+            background-color: #888888;
+            padding: 10px;
+            border-radius: 15px;
+            border: 2px solid red;
+        }
+
+        input {
+            margin-bottom: 15px;
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid yellow;
+        }
+
+        input:focus-visible {
+            margin-bottom: 15px;
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid red;
+            outline: none;
+        }
+
+        .sucesso {
+            text-align: center;
+            color: yellow;
+        }
+
+        .deleted {
+            text-align: center;
+            color: yellow;
+        }
+
+
+        .erro {
+            text-align: center;
+            color: red;
+        }
+
+        .editar {
+            margin-top: 5px;
+            padding: 8px;
+            background: yellow;
+            border-radius: 15px;
+            font-weight: 900;
+            border: none;
+        }
+
+        .deletar {
+            margin-top: 5px;
+            border: none;
+            padding: 8px;
+            background: red;
+            border-radius: 15px;
+            font-weight: 900;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <nav>
+            <button v-if="!formulario" class="b-nav" onclick="mudarCadastro()">Cadastro</button>
+            <button v-if="formulario" class="b-nav" onclick="mudarCadastro()">Voltar</button>
+        </nav>
+
+        <p v-if="sucesso" class="sucesso">Automóvel salvo com sucesso</p>
+        <p v-if="erro" class="erro">Erro ao salvar o automóvel</p>
+        <p v-if="deleted" class="deleted">Automóvel deletado com sucesso</p>
+
+        <div class="area" v-if="!formulario">
+            <div class="card" v-for="carro in carros">
+                <div class="row">
+                    <h3>Marca do Automóvel:</h3>
+                    <p>{{carro.fields.marca.stringValue}}</p>
+                </div>
+                <div class="line"></div>
+                <div class="row">
+                    <h3>Modelo:</h3>
+                    <p>{{carro.fields.modelo.stringValue}} |</p>
+                    <h3>Cor:</h3>
+                    <p>{{carro.fields.cor.stringValue}}</p>
+                </div>
+                <div class="line"></div>
+                <div class="row">
+                    <h3>Placa:</h3>
+                    <p>{{carro.fields.placa.stringValue}} |</p>
+                    <h3>Ano:</h3>
+                    <p>{{carro.fields.ano.stringValue}}</p>
+                </div>
+                <div class="line"></div>
+                <div class="row">
+                    <h3>km Rodada:</h3>
+                    <p>{{carro.fields.quilometro.stringValue}}</p>
+                </div>
+                <div class="line"></div>
+                <div class="row">
+                    <button class="editar" v-bind:value="carro.fields.placa.stringValue"
+                        onclick="editarCadastro(value)">Editar</button>
+                    <button class="deletar" v-bind:value="carro.fields.placa.stringValue"
+                        onclick="deletar(value)">Deletar</button>
+                </div>
+            </div>
+        </div>
+
+        <dialog class="formulario" v-if="formulario">
+            <label for="marca">Marca do Automóvel</label>
+            <input type="text" v-model="marca" id="marca" name="marca">
+            <label for="modelo">Modelo</label>
+            <input type="text" v-model="modelo" id="modelo" name="modelo">
+            <label for="cor">Cor</label>
+            <input type="text" v-model="cor" id="cor" name="cor">
+            <label for="placa">Placa</label>
+            <input type="text" v-model="placa" id="placa" name="placa">
+            <label for="ano">Ano de Fabricação</label>
+            <input type="text" v-model="ano" id="ano" name="ano">
+            <label for="quilometro">Km rodado</label>
+            <input type="text" v-model="quilometro" id="quilometro" name="quilometro">
+            <button v-if="!sucesso&&!editar" v-bind:value="placa" class="b-form" onclick="enviar(value)">Enviar</button>
+            <button v-if="!sucesso&&editar" class="b-form" onclick="editar()">Editar</button>
+            <button v-if="sucesso" class="b-form" onclick="voltar()">Voltar</button>
+        </dialog>
+
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                editar: false,
+                deleted: false,
+                sucesso: false,
+                formulario: false,
+                id: '',
+                carros: [],
+                marca: '',
+                modelo: '',
+                cor: '',
+                placa: '',
+                ano: '',
+                quilometro: '',
+                erro: false,
+            },
+
+        });
+
+        window.onload = function () {
+            fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis')
+                .then(response => response.json())
+                .then(carroResponse => {
+                    app.carros = carroResponse.documents;
+                });
+        };
+
+        function editarCadastro(id) {
+            app.editar = true;
+            app.formulario = !app.formulario;
+            app.erro = false;
+            app.sucesso = false;
+            app.deleted = false;
+            fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis/' + id)
+                .then(response => response.json())
+                .then(carroResponse => {
+                    console.log(carroResponse);
+                    app.marca = carroResponse.fields.marca.stringValue;
+                    app.modelo = carroResponse.fields.modelo.stringValue;
+                    app.cor = carroResponse.fields.cor.stringValue;
+                    app.placa = carroResponse.fields.placa.stringValue;
+                    app.ano = carroResponse.fields.ano.stringValue;
+                    app.quilometro = carroResponse.fields.quilometro.stringValue;
+                });
+        }
+
+        function mudarCadastro() {
+            app.editar = false;
+            app.formulario = !app.formulario;
+            app.erro = false;
+            app.sucesso = false;
+            app.deleted = false;
+            fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis')
+                .then(response => response.json())
+                .then(carroResponse => {
+                    app.carros = carroResponse.documents;
+                });
+        }
+
+        function voltar() {
+            app.editar = false;
+            app.erro = false;
+            app.formulario = false;
+            app.sucesso = false;
+            app.deleted = false;
+            fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis')
+                .then(response => response.json())
+                .then(carroResponse => {
+                    app.carros = carroResponse.documents;
+                });
+        }
+
+        function deletar(id) {
+            const options = {
+                method: "DELETE",
+            }
+
+            fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis/' + id, options)
+                .then(T => {
+                    console.log(T);
+                    if (T.status == 200) {
+                        app.erro = false;
+                        app.deleted = true;
+                        fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis')
+                            .then(response => response.json())
+                            .then(carroResponse => {
+                                app.carros = carroResponse.documents;
+                            });
+                    } else {
+                        app.deleted = false;
+                        app.erro = true;
+                    }
+                });
+        }
+
+        function enviar() {
+            const request = {
+                "fields": {
+                    "id": { "stringValue": app.placa },
+                    "marca": { "stringValue": app.marca },
+                    "modelo": { "stringValue": app.modelo },
+                    "cor": { "stringValue": app.cor },
+                    "placa": { "stringValue": app.placa },
+                    "ano": { "stringValue": app.ano },
+                    "quilometro": { "stringValue": app.quilometro }
+                }
+            }
+
+            const options = {
+                method: "POST",
+                body: JSON.stringify(request),
+            }
+
+            fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis/?documentId=' + app.placa, options)
+                .then(T => {
+                    if (T.status == 200) {
+                        app.erro = false;
+                        app.sucesso = true;
+                    } else {
+                        app.sucesso = false;
+                        app.erro = true;
+                    }
+                });
+
+        }
+
+        function editar(id) {
+            const request = {
+                "fields": {
+                    "id": { "stringValue": app.placa },
+                    "marca": { "stringValue": app.marca },
+                    "modelo": { "stringValue": app.modelo },
+                    "cor": { "stringValue": app.cor },
+                    "placa": { "stringValue": app.placa },
+                    "ano": { "stringValue": app.ano },
+                    "quilometro": { "stringValue": app.quilometro }
+                }
+            }
+
+            let options = {
+                method: "DELETE",
+            }
+
+            fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis/' + id, options)
+                .then(T => {
+                    console.log(T);
+                    if (T.status == 200) {
+                        fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis')
+                            .then(response => response.json())
+                            .then(carroResponse => {
+                                app.carros = carroResponse.documents;
+                            });
+                    } else {
+                        app.deleted = false;
+                        app.erro = true;
+                    }
+                });
+
+            options = {
+                method: "PATCH",
+                body: JSON.stringify(request),
+            }
+            fetch('https://firestore.googleapis.com/v1/projects/web-puc/databases/(default)/documents/automoveis/' + id, options)
+                .then(T => {
+                    if (T.status == 200) {
+                        app.erro = false;
+                        app.sucesso = true;
+                    } else {
+                        app.sucesso = false;
+                        app.erro = true;
+                    }
+                });
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>
